@@ -390,8 +390,12 @@ class Item(LoggedModel):
     :type require_voucher: bool
     :param hide_without_voucher: If set to ``True``, this item is only visible and available when a voucher is used.
     :type hide_without_voucher: bool
-    :param allow_cancel: If set to ``False``, an order with this product can not be canceled by the user.
+    :param allow_cancel: If set to ``False``, an order with this product can not be canceled or changed by the user.
     :type allow_cancel: bool
+    :param allow_position_cancel: If set to ``False``, a position with this product can not be canceled by the user.
+    :type allow_position_cancel: bool
+    :param allow_position_change: If set to ``False``, a position with this product can not be changed by the user.
+    :type allow_position_change: bool
     :param max_per_order: Maximum number of times this item can be in an order. None for unlimited.
     :type max_per_order: int
     :param min_per_order: Minimum number of times this item needs to be in an order if bought at all. None for unlimited.
@@ -632,10 +636,22 @@ class Item(LoggedModel):
                     'but only for fixed bundles!')
     )
     allow_cancel = models.BooleanField(
-        verbose_name=_('Allow product to be canceled or changed'),
+        verbose_name=_('Allow orders with this product to be canceled or changed'),
         default=True,
         help_text=_('If this is checked, the usual cancellation and order change settings of this event apply. If this is unchecked, '
-                    'orders containing this product can not be canceled by users but only by you.')
+                    'orders containing this product can not be canceled or changed by users but only by you.')
+    )
+    allow_position_cancel = models.BooleanField(
+        verbose_name=_('Allow positions with this product to be canceled'),
+        default=True,
+        help_text=_('If this is checked, the usual cancellation settings of this event apply. If this is unchecked, '
+                    'positions containing this product can not be canceled by users but only by you.')
+    )
+    allow_position_change = models.BooleanField(
+        verbose_name=_('Allow positions with this product to be changed'),
+        default=True,
+        help_text=_('If this is checked, the usual order change settings of this event apply. If this is unchecked, '
+                    'positions containing this product can not be changed by users but only by you.')
     )
     min_per_order = models.IntegerField(
         verbose_name=_('Minimum amount per order'),

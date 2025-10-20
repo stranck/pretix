@@ -93,6 +93,8 @@ class JSONExporter(BaseExporter):
                         'require_voucher': item.require_voucher,
                         'hide_without_voucher': item.hide_without_voucher,
                         'allow_cancel': item.allow_cancel,
+                        'allow_position_cancel': item.allow_position_cancel,
+                        'allow_position_change': item.allow_position_change,
                         'require_bundling': item.require_bundling,
                         'min_per_order': item.min_per_order,
                         'max_per_order': item.max_per_order,

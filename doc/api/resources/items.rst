@@ -78,7 +78,11 @@ require_voucher                         boolean                    If ``true``, 
 hide_without_voucher                    boolean                    If ``true``, this item is only shown during the voucher
                                                                    redemption process, but not in the normal shop
                                                                    frontend.
-allow_cancel                            boolean                    If ``false``, customers cannot cancel orders containing
+allow_cancel                            boolean                    If ``false``, customers cannot cancel or change orders containing
+                                                                   this item.
+allow_position_cancel                   boolean                    If ``false``, customers cannot cancel positions containing
+                                                                   this item.
+allow_position_change                   boolean                    If ``false``, customers cannot change positions containing
                                                                    this item.
 min_per_order                           integer                    This product can only be bought if it is included at
                                                                    least this many times in the order (or ``null`` for no
@@ -298,6 +302,8 @@ Endpoints
             "require_voucher": false,
             "hide_without_voucher": false,
             "allow_cancel": true,
+            "allow_position_cancel": true,
+            "allow_position_change": true,
             "min_per_order": null,
             "max_per_order": null,
             "checkin_attention": false,
@@ -450,6 +456,8 @@ Endpoints
         "require_voucher": false,
         "hide_without_voucher": false,
         "allow_cancel": true,
+        "allow_position_cancel": true,
+        "allow_position_change": true,
         "generate_tickets": null,
         "allow_waitinglist": true,
         "show_quota_left": null,
@@ -581,6 +589,8 @@ Endpoints
         "require_voucher": false,
         "hide_without_voucher": false,
         "allow_cancel": true,
+        "allow_position_cancel": true,
+        "allow_position_change": true,
         "generate_tickets": null,
         "allow_waitinglist": true,
         "show_quota_left": null,
@@ -698,6 +708,8 @@ Endpoints
         "require_voucher": false,
         "hide_without_voucher": false,
         "allow_cancel": true,
+        "allow_position_cancel": true,
+        "allow_position_change": true,
         "min_per_order": null,
         "max_per_order": null,
         "generate_tickets": null,
@@ -852,6 +864,8 @@ Endpoints
         "allow_waitinglist": true,
         "show_quota_left": null,
         "allow_cancel": true,
+        "allow_position_cancel": true,
+        "allow_position_change": true,
         "min_per_order": null,
         "max_per_order": null,
         "checkin_attention": false,

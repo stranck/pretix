@@ -269,7 +269,7 @@ class ItemSerializer(SalesChannelMigrationMixin, I18nAwareModelSerializer):
                   'description', 'default_price', 'free_price', 'free_price_suggestion', 'tax_rate', 'tax_rule', 'admission',
                   'personalized', 'position', 'picture',
                   'available_from', 'available_from_mode', 'available_until', 'available_until_mode',
-                  'require_voucher', 'hide_without_voucher', 'allow_cancel', 'require_bundling',
+                  'require_voucher', 'hide_without_voucher', 'allow_cancel', 'allow_position_cancel', 'allow_position_change', 'require_bundling',
                   'min_per_order', 'max_per_order', 'checkin_attention', 'checkin_text', 'has_variations', 'variations',
                   'addons', 'bundles', 'original_price', 'require_approval', 'generate_tickets',
                   'show_quota_left', 'hidden_if_available', 'hidden_if_item_available', 'hidden_if_item_available_mode', 'allow_waitinglist',
