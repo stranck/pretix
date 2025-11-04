@@ -344,7 +344,9 @@ class OrderPositionDetails(EventViewMixin, OrderPositionDetailMixin, CartMixin, 
         ctx = super().get_context_data(**kwargs)
         ctx['can_download_multi'] = False
         ctx['position'] = self.position
-        ctx['attendee_change_allowed'] = self.position.attendee_change_allowed
+        ctx['attendee_order_cancel_or_change_allowed'] = self.position.attendee_order_cancel_or_change_allowed
+        ctx['attendee_position_change_allowed'] = self.position.attendee_position_change_allowed
+        ctx['attendee_position_cancel_allowed'] = self.position.attendee_position_cancel_allowed
         return ctx
 
 
@@ -1354,6 +1356,24 @@ class OrderChangeMixin:
         ctx['formgroups'] = self.formdict
         return ctx
 
+    
+    # Cancel enabled, change enabled:
+    # Puoi letteralmente fare tutto
+    #
+    # Cancel disable, change enabled:
+    # Solo operazioni che vanno verso l'alto:
+    # - variation change possibili -> item con variation da mostrare senza poter essere rimossi
+    # - item con current quantity = max quantity da non mostrare
+    # - item con current quantity < da max quantity, inserire un minimo = current quantity
+    # 
+    # Cancel enabled, change disabled:
+    # - si possono cancellare cose a piacimento
+    # - variation non possono essere cambiate, ma solo cancellate nella loro interesza
+    # 
+    # Cancel disabled, change disabled:
+    # - si possono solo aggiungere cose all'ordine
+    # - non si possono modificare variation 
+
     @cached_property
     def positions(self):
         positions = list(
@@ -1571,12 +1591,12 @@ class OrderChangeMixin:
                         messages.error(request, e.message % e.params if e.params else e.message)
                         return self.get(request, *args, **kwargs)
 
-                    for (i, v), (c, price) in selected.items():
+                    for (i, v), (count, price) in selected.items():
                         addons_data.append({
                             'addon_to': p.pk,
                             'item': i.pk,
                             'variation': v.pk if v else None,
-                            'count': c,
+                            'count': count,
                             'price': price,
                         })
             try:
@@ -1592,6 +1612,7 @@ class OrderChangeMixin:
             messages.error(self.request, _('An error occurred. Please see the details below.'))
         else:
             try:
+                # TODO validate cancels/changes
                 self._validate_total_diff(ocm)
             except OrderError as e:
                 messages.error(self.request, str(e))
@@ -1718,7 +1739,7 @@ class OrderPositionChange(OrderChangeMixin, EventViewMixin, OrderPositionDetailM
         self.kwargs = kwargs
         if not self.position:
             raise Http404(_('Unknown order code or not authorized to access this order.'))
-        if not self.position.attendee_change_allowed:
+        if not self.position.attendee_order_cancel_or_change_allowed:
             messages.error(request, _('You cannot change this order.'))
             return redirect(self.get_position_url())
         return super().dispatch(request, *args, **kwargs)

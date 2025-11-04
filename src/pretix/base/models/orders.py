@@ -2901,9 +2901,9 @@ class OrderPosition(AbstractPosition):
                 attach_tickets=True
             )
 
-    @property
+    @cached_property
     @scopes_disabled()
-    def attendee_change_allowed(self) -> bool:
+    def attendee_order_cancel_or_change_allowed(self) -> bool:
         """
         Returns whether or not this order can be changed by the attendee.
         """
@@ -2921,6 +2921,15 @@ class OrderPosition(AbstractPosition):
             (self.order.event.settings.change_allow_user_variation and any([op.has_variations for op in positions])) or
             (self.order.event.settings.change_allow_user_addons and ItemAddOn.objects.filter(base_item_id__in=[op.item_id for op in positions]).exists())
         )
+
+    @property
+    def attendee_position_change_allowed(self) -> bool:
+        return self.attendee_order_cancel_or_change_allowed and self.item.allow_position_change
+
+    @property
+    def attendee_position_cancel_allowed(self) -> bool:
+        return self.attendee_order_cancel_or_change_allowed and self.item.allow_position_cancel
+
 
     @property
     def code(self):

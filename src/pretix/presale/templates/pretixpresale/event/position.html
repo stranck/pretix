@@ -56,7 +56,7 @@
         </div>
     </div>
     {% eventsignal event "pretix.presale.signals.position_info" order=order position=position request=request %}
-    {% if attendee_change_allowed %}
+    {% if attendee_order_cancel_or_change_allowed %}
         <div class="panel panel-default panel-cancellation">
             <div class="panel-heading">
                 <h3 class="panel-title">
