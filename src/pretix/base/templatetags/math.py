@@ -23,29 +23,18 @@ from django import template
 
 register = template.Library()
 
+@register.filter(name='min')
+def min(a, b):
+    if a is None:
+        return b
+    if b is None:
+        return a
+    return a if a < b else b
 
-@register.filter(name='splitlines')
-def splitlines(value):
-    return value.split("\n")
-
-
-@register.filter(name='joinlines')
-def joinlines(value):
-    return "\n".join(value)
-
-@register.filter(name='makelist')
-def makelist(a, b):
-    return [a, b]
-
-@register.filter(name='appendlist')
-def appendlist(l, item):
-    l.append(item)
-    return l
-
-@register.filter(name='minvalue')
-def minvalue(value):
-    return min(value) if value else None
-
-@register.filter(name='maxvalue')
-def maxvalue(value):
-    return max(value) if value else None
+@register.filter(name='max')
+def max(a, b):
+    if a is None:
+        return b
+    if b is None:
+        return a
+    return a if a > b else b

@@ -3,11 +3,12 @@
 {% load eventurl %}
 {% load money %}
 {% load thumb %}
+{% load math %}
 {% load eventsignal %}
 {% load rich_text %}
 {% for c in form.categories %}
     {% with category_idx=forloop.counter %}
-    <fieldset data-addon-max-count="{{ c.max_count }}"{% if c.multi_allowed %} data-addon-multi-allowed{% endif %}>
+    <fieldset data-addon-max-count="{{ c.max_count }}" data-addon-min-count="{{c.min_count }}"{% if c.multi_allowed %} data-addon-multi-allowed{% endif %}>
         <legend>{{ c.category.name }}</legend>
         {% if c.category.description %}
             {{ c.category.description|rich_text }}
@@ -58,11 +59,27 @@
                                         {{ item.description|localize|rich_text }}
                                     </div>
                                 {% endif %}
-                                {% if item.min_per_order and item.min_per_order > 1 %}
-                                    <p id="cp-{{ form.pos.pk }}-item-{{ item.pk }}-min-order">
+                                {% if item.min_per_order and item.min_per_order > 0 and item.max_per_order and item.max_per_order > 0 %}
+                                    <p class="item-count-desc" id="cp-{{ form.pos.pk }}-item-{{ item.pk }}-limit-order">
+                                        <small>
+                                            {% blocktrans trimmed with min_num=item.min_per_order max_num=item.max_per_order %}
+                                                You can order between {{ min_num }} and {{ max_num }}.
+                                            {% endblocktrans %}
+                                        </small>
+                                    </p>
+                                {% elif item.min_per_order and item.min_per_order > 0 %}
+                                    <p class="item-count-desc" id="cp-{{ form.pos.pk }}-item-{{ item.pk }}-limit-order">
                                         <small>
                                             {% blocktrans trimmed with num=item.min_per_order %}
-                                                minimum amount to order: {{ num }}
+                                                Minimum amount to order: {{ num }}.
+                                            {% endblocktrans %}
+                                        </small>
+                                    </p>
+                                {% elif item.max_per_order and item.max_per_order > 0 %}
+                                    <p class="item-count-desc" id="cp-{{ form.pos.pk }}-item-{{ item.pk }}-limit-order">
+                                        <small>
+                                            {% blocktrans trimmed with num=item.max_per_order %}
+                                                Maximum amount to order: {{ num }}.
                                             {% endblocktrans %}
                                         </small>
                                     </p>
@@ -203,7 +220,7 @@
                                                 {% trans "Select" context "checkbox" %}
                                             </label>
                                         {% else %}
-                                            <fieldset class="input-item-count-group" aria-describedby="c-{{ form.pos.pk }}-{{ category_idx }}-addon-count-desc cp-{{ form.pos.pk }}-item-{{ item.pk }}-min-order">
+                                            <fieldset class="input-item-count-group" data-item-max-count="{{ c.max_count|min:item.max_per_order|add:'1' }}" data-item-min-count="{{ item.min_per_order }}" aria-describedby="c-{{ form.pos.pk }}-{{ category_idx }}-addon-count-desc cp-{{ form.pos.pk }}-item-{{ item.pk }}-limit-order">
                                                 <legend class="sr-only">{% trans "Quantity" %}</legend>
                                                 <button type="button" data-step="-1" data-controls="cp_{{ form.pos.pk }}_variation_{{ item.id }}_{{ var.id }}" class="btn btn-default input-item-count-dec" aria-label="- {{ item }}, {{ var }}: {% trans "Decrease quantity" %}">-</button>
                                                 <input type="number" class="form-control input-item-count" placeholder="0" min="0"
@@ -211,7 +228,6 @@
                                                     {% if item.free_price %}
                                                        data-checked-onchange="price-variation-{{form.pos.pk}}-{{ item.pk }}-{{ var.pk }}"
                                                     {% endif %}
-                                                    max="{{ c.max_count }}"
                                                     id="cp_{{ form.pos.pk }}_variation_{{ item.id }}_{{ var.id }}"
                                                     name="cp_{{ form.pos.pk }}_variation_{{ item.id }}_{{ var.id }}"
                                                     aria-labelledby="cp-{{ form.pos.pk }}-item-{{ item.pk }}-{{ var.pk }}-legend cp-{{ form.pos.pk }}-item-{{ item.pk }}-legend">
@@ -252,11 +268,27 @@
                             {% if item.do_show_quota_left %}
                                 {% include "pretixpresale/event/fragment_quota_left.html" with avail=item.cached_availability %}
                             {% endif %}
-                            {% if item.min_per_order and item.min_per_order > 1 %}
-                                <p id="cp-{{ form.pos.pk }}-item-{{ item.pk }}-min-order">
+                            {% if item.min_per_order and item.min_per_order > 0 and item.max_per_order and item.max_per_order > 0 %}
+                                <p id="cp-{{ form.pos.pk }}-item-{{ item.pk }}-limit-order">
+                                    <small>
+                                        {% blocktrans trimmed with min_num=item.min_per_order max_num=item.max_per_order %}
+                                            You can order between {{ min_num }} and {{ max_num }}.
+                                        {% endblocktrans %}
+                                    </small>
+                                </p>
+                            {% elif item.min_per_order and item.min_per_order > 0 %}
+                                <p id="cp-{{ form.pos.pk }}-item-{{ item.pk }}-limit-order">
                                     <small>
                                         {% blocktrans trimmed with num=item.min_per_order %}
-                                            minimum amount to order: {{ num }}
+                                            Minimum amount to order: {{ num }}.
+                                        {% endblocktrans %}
+                                    </small>
+                                </p>
+                            {% elif item.max_per_order and item.max_per_order > 0 %}
+                                <p id="cp-{{ form.pos.pk }}-item-{{ item.pk }}-limit-order">
+                                    <small>
+                                        {% blocktrans trimmed with num=item.max_per_order %}
+                                            Maximum amount to order: {{ num }}.
                                         {% endblocktrans %}
                                     </small>
                                 </p>
@@ -349,14 +381,13 @@
                                             {% trans "Select" context "checkbox" %}
                                 </label>
                             {% else %}
-                                <fieldset class="input-item-count-group" aria-describedby="c-{{ form.pos.pk }}-{{ category_idx }}-addon-count-desc cp-{{ form.pos.pk }}-item-{{ item.pk }}-min-order">
+                                <fieldset class="input-item-count-group" data-item-max-count="{{ c.max_count|min:item.max_per_order|add:'1' }}" data-item-min-count="{{ item.min_per_order }}" aria-describedby="c-{{ form.pos.pk }}-{{ category_idx }}-addon-count-desc cp-{{ form.pos.pk }}-item-{{ item.pk }}-limit-order">
                                     <legend class="sr-only">{% trans "Quantity" %}</legend>
                                     <button type="button" data-step="-1" data-controls="cp_{{ form.pos.pk }}_item_{{ item.id }}" class="btn btn-default input-item-count-dec" aria-label="- {{ item }}: {% trans "Decrease quantity" %}">-</button>
                                     <input type="number" class="form-control input-item-count" placeholder="0" min="0"
                                         {% if item.free_price %}
                                            data-checked-onchange="price-item-{{ form.pos.pk }}-{{ item.pk }}"
                                         {% endif %}
-                                        max="{{ c.max_count }}"
                                         {% if item.initial %}value="{{ item.initial }}"{% endif %}
                                         name="cp_{{ form.pos.pk }}_item_{{ item.id }}"
                                         id="cp_{{ form.pos.pk }}_item_{{ item.id }}"

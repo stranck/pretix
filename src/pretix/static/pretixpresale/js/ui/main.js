@@ -143,12 +143,51 @@ var form_handlers = function (el) {
     });
 
 
-    el.find("fieldset[data-addon-max-count]").each(function() {
+    el.find("fieldset[data-addon-max-count], fieldset[data-addon-min-count]").each(function() {
         // usually addons are only allowed once one per item
+        var category = this;
         var multipleAllowed = this.hasAttribute("data-addon-multi-allowed");
         var $inputs = $(".availability-box input", this);
-        var max = parseInt(this.getAttribute("data-addon-max-count"));
-        var desc = $(".addon-count-desc", this).text().trim();
+        var categoryMax = parseInt(this.getAttribute("data-addon-max-count") || Number.MAX_SAFE_INTEGER);
+        var categoryMin = parseInt(this.getAttribute("data-addon-min-count") || 0);
+        var categoryDesc = $(".addon-count-desc", this).text().trim();
+
+        $("fieldset.input-item-count-group", this).each(function() {
+            // enforce popup for limits for each single item
+            var itemMax = parseInt(this.getAttribute("data-item-max-count") || Number.MAX_SAFE_INTEGER);
+            var itemMin = parseInt(this.getAttribute("data-item-min-count") || 0);
+
+            var descItems = this.getAttribute("aria-describedby").split(/\s+/).reverse();
+            var itemDesc = null;
+            for (const i of descItems) {
+                var desc = $("#" + i, category);
+                if (desc.length > 0) {
+                    itemDesc = desc.text().trim();
+                    break;
+                }
+            }
+            
+            this.addEventListener("change", function (e) {
+                var val = e.target.value || 0;
+                // max is on purpose +1 than the real max, to let us catch when an user try to add more than max
+                var overMax = val >= itemMax, underMin = val < itemMin;
+                if (overMax || underMin) {
+                    if (overMax) e.target.value = itemMax - 1;
+                    if (itemMax > 1 && itemMax != itemMin) {
+                        $(e.target).trigger("change").closest(".availability-box").tooltip({
+                            "title": itemDesc,
+                        }).tooltip('show');
+                        e.preventDefault();
+                        e.alertCreated = true;
+                    }
+                } else {
+                    if (!e.alertCreated) {
+                        $(".availability-box", this).tooltip('destroy');
+                    }
+                }
+            });
+        });
+
         this.addEventListener("change", function (e) {
             var variations = e.target.closest(".variations");
             if (variations && !multipleAllowed && e.target.checked) {
@@ -156,27 +195,36 @@ var form_handlers = function (el) {
                 $(".availability-box input:checked", variations).not(e.target).prop("checked", false).trigger("change");
             }
 
-            if (max === 1) {
+            if (categoryMax === 1) {
                 if (e.target.checked) {
+                    // uncheck all other checkboxes in this category if max is 1
                     $inputs.filter(":checked").not(e.target).prop("checked", false).trigger("change");
                 }
                 return;
             }
+
+            // popup handler code
             var total = $inputs.toArray().reduce(function(a, e) {
                 return a + (e.type == "checkbox" ? (e.checked ? parseInt(e.value) : 0) : parseInt(e.value) || 0);
             }, 0);
-            if (total > max) {
-                if (e.target.type == "checkbox") {
-                    e.target.checked = false;
-                } else {
-                    e.target.value = e.target.value - (total - max);
+            var overMax = total > categoryMax, underMin = total < categoryMin;
+            if (overMax || underMin) {
+                if (overMax) {
+                    if (e.target.type == "checkbox") {
+                        e.target.checked = false;
+                    } else {
+                        e.target.value = e.target.value - (total - categoryMax);
+                    }
                 }
                 $(e.target).trigger("change").closest(".availability-box").tooltip({
-                    "title": desc,
+                    "title": categoryDesc,
                 }).tooltip('show');
                 e.preventDefault();
+                e.alertCreated = true;
             } else {
-                $(".availability-box", this).tooltip('destroy')
+                if (!e.alertCreated) {
+                    $(".availability-box", this).tooltip('destroy');
+                }
             }
         });
     });
