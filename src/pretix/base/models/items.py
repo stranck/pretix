@@ -651,7 +651,9 @@ class Item(LoggedModel):
         verbose_name=_('Allow positions with this product to be changed'),
         default=True,
         help_text=_('If this is checked, the usual order change settings of this event apply. If this is unchecked, '
-                    'positions containing this product can not be changed by users but only by you.')
+                    'positions containing this product can not be changed by users but only by you. Users will not be able to '
+                    'add or cancel add-ons to this product, nor change variations of its add-ons. If this product is an addo-on with variations, '
+                    'users will not be able to change it.')
     )
     min_per_order = models.IntegerField(
         verbose_name=_('Minimum amount per order'),

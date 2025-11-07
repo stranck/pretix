@@ -39,6 +39,7 @@
             </p>
         {% endif %}
         {% for item in c.items %}
+            AAAAAAA Ich: {{ item.allow_position_change }} Ica: {{ item.allow_position_cancel }} Pch: {{ parent_allow_position_change }} Pca: {{ parent_allow_position_cancel }}
             {% if item.has_variations %}
                 <article aria-labelledby="cp-{{ form.pos.pk }}-item-{{ item.pk }}-legend"{% if item.description %} aria-describedby="cp-{{ form.pos.pk }}-item-{{ item.pk }}-description"{% endif %} class="item-with-variations{% if event.settings.show_variations_expanded %} details-open{% endif %}" id="item-{{ item.pk }}">
                     <div class="row-fluid product-row headline">
@@ -205,7 +206,7 @@
                                 </div>
                                 {% if not item.current_unavailability_reason and not var.current_unavailability_reason and var.cached_availability.0 == 100 or var.initial %}
                                     <div class="col-md-2 col-sm-3 col-xs-6 availability-box available">
-                                        {% if c.max_count == 1 or not c.multi_allowed %}
+                                        {% if c.max_count == 1 or not c.multi_allowed or item.max_per_order == 1 %}
                                             <label class="btn btn-default btn-checkbox">
                                                 <input type="checkbox" value="1"
                                                         {% if var.initial %}checked="checked"{% endif %}
@@ -361,7 +362,7 @@
                     </div>
                     {% if not item.current_unavailability_reason and item.cached_availability.0 == 100 or item.initial %}
                         <div class="col-md-2 col-sm-3 col-xs-6 availability-box available">
-                            {% if c.max_count == 1 or not c.multi_allowed %}
+                            {% if c.max_count == 1 or not c.multi_allowed or item.max_per_order == 1 %}
                                 <label class="btn btn-default btn-checkbox">
                                     <input type="checkbox" value="1"
                                             {% if item.free_price %}

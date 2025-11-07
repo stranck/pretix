@@ -47,7 +47,7 @@
                 </div>
             </div>
             {% if position.addon_form %}
-                {% include "pretixpresale/event/fragment_addon_choice.html" with form=position.addon_form hide_prices=hide_prices %}
+                {% include "pretixpresale/event/fragment_addon_choice.html" with form=position.addon_form hide_prices=hide_prices parent_allow_position_change=position.item.allow_position_change parent_allow_position_cancel=position.item.allow_position_cancel %}
             {% endif %}
         </div>
     </div>

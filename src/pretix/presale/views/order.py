@@ -1354,6 +1354,7 @@ class OrderChangeMixin:
         ctx['order'] = self.order
         ctx['positions'] = self.positions
         ctx['formgroups'] = self.formdict
+        ctx['is_order_change'] = True
         return ctx
 
     
